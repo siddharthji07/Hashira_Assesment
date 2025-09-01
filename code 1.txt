@@ -1,0 +1,63 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+// Convert string from any base (2–16 or more) into decimal (long long for now)
+long long convertToDecimal(const string &val, int base) {
+    long long num = 0;
+    for (char c : val) {
+        int digit;
+        if (isdigit(c)) digit = c - '0';
+        else if (isalpha(c)) digit = 10 + (tolower(c) - 'a');
+        else continue;
+        num = num * base + digit;
+    }
+    return num;
+}
+
+int main() {
+    // Example input (first test case JSON roots)
+    int n = 4, k = 3; // from JSON
+    vector<pair<int,string>> roots = {
+        {10, "4"},
+        {2, "111"},
+        {10, "12"},
+        {4, "213"}
+    };
+
+    // Pick first k-1 roots
+    vector<long long> r;
+    for (int i = 0; i < k-1; i++) {
+        r.push_back(convertToDecimal(roots[i].second, roots[i].first));
+    }
+
+    // Build polynomial coefficients (start with P(x) = 1)
+    vector<long long> coeff = {1};  
+    for (auto root : r) {
+        vector<long long> newCoeff(coeff.size() + 1, 0);
+        for (int i = 0; i < coeff.size(); i++) {
+            newCoeff[i] += -root * coeff[i];
+            newCoeff[i+1] += coeff[i];
+        }
+        coeff = newCoeff;
+    }
+
+    // Print polynomial
+    cout << "Polynomial coefficients (from constant to highest degree):\n";
+    for (int i = 0; i < coeff.size(); i++) {
+        cout << coeff[i] << (i+1 == coeff.size() ? "" : " ");
+    }
+    cout << endl;
+
+    // Print polynomial nicely
+    cout << "P(x) = ";
+    for (int i = coeff.size()-1; i >= 0; i--) {
+        if (coeff[i] == 0) continue;
+        if (i != coeff.size()-1 && coeff[i] > 0) cout << "+";
+        if (i == 0) cout << coeff[i];
+        else if (i == 1) cout << coeff[i] << "x";
+        else cout << coeff[i] << "x^" << i;
+    }
+    cout << endl;
+
+    return 0;
+}

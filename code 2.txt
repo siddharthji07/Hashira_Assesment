@@ -1,0 +1,61 @@
+import java.math.BigInteger;
+import java.util.*;
+
+public class Main {
+    // Convert value (string) in given base to BigInteger
+    static BigInteger convertToDecimal(String value, int base) {
+        return new BigInteger(value, base);
+    }
+
+    public static void main(String[] args) {
+        int n = 10, k = 7; // from JSON
+
+        // First 6 roots from JSON
+        String[][] roots = {
+            {"6",  "13444211440455345511"},
+            {"15", "aed7015a346d635"},
+            {"15", "6aeeb69631c227c"},
+            {"16", "e1b5e05623d881f"},
+            {"8",  "316034514573652620673"},
+            {"3",  "2122212201122002221120200210011020220200"}
+        };
+
+        List<BigInteger> r = new ArrayList<>();
+        for (int i = 0; i < k-1; i++) {
+            int base = Integer.parseInt(roots[i][0]);
+            r.add(convertToDecimal(roots[i][1], base));
+        }
+
+        // Build polynomial coefficients
+        List<BigInteger> coeff = new ArrayList<>();
+        coeff.add(BigInteger.ONE); // start with 1
+
+        for (BigInteger root : r) {
+            List<BigInteger> newCoeff = new ArrayList<>(Collections.nCopies(coeff.size()+1, BigInteger.ZERO));
+            for (int i = 0; i < coeff.size(); i++) {
+                newCoeff.set(i, newCoeff.get(i).add(coeff.get(i).multiply(root.negate())));
+                newCoeff.set(i+1, newCoeff.get(i+1).add(coeff.get(i)));
+            }
+            coeff = newCoeff;
+        }
+
+        // Print coefficients
+        System.out.println("Polynomial coefficients (constant to degree 6):");
+        for (BigInteger c : coeff) {
+            System.out.print(c.toString() + " ");
+        }
+        System.out.println();
+
+        // Print polynomial nicely
+        System.out.print("P(x) = ");
+        for (int i = coeff.size()-1; i >= 0; i--) {
+            BigInteger c = coeff.get(i);
+            if (c.equals(BigInteger.ZERO)) continue;
+            if (i != coeff.size()-1 && c.signum() > 0) System.out.print("+");
+            if (i == 0) System.out.print(c);
+            else if (i == 1) System.out.print(c + "x");
+            else System.out.print(c + "x^" + i);
+        }
+        System.out.println();
+    }
+}
